@@ -20,8 +20,12 @@ On 120 slices from 39 patients the model never saw, it finds **93.1% of stones**
 | `dataset/kidney/` | The dataset in YOLO format |
 | `kidney.zip` | The same dataset, zipped for Colab |
 | `demo_images/` | The 120 test slices; each file name gives the labeled stone count |
+| `slides/` | The presentation: `kidney_stone_second_reader_slides.pdf`, and `index.html` with speaker notes under each slide |
 | `GLOSSARY.md` | Project terms: slice, scan session, hit, false alarm, show and red thresholds |
 | `docs/adr/` | Why results use a split by patient instead of the published split |
+| `tools/build_notebook.py` | Generates the v2 notebook (without outputs): `python tools/build_notebook.py out.ipynb` |
+| `tools/check_notebook.py` | Runs every non-GPU notebook cell on the real dataset with a stand-in model, plus unit checks of the hit, duplicate and threshold logic: `python tools/check_notebook.py out.ipynb <folder with kidney.zip> <work dir> <figure dir>` |
+| `tools/export_deck.py` | Rebuilds `slides/index.html` from the deck's source files |
 
 ## Method in brief
 

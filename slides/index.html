@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kidney Stone Second Reader</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+body { margin: 0; background: #2b2f36; font-family: 'IBM Plex Sans', Arial, sans-serif; }
+main { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+.frame { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; margin-top: 24px; box-shadow: 0 4px 24px rgba(0,0,0,.4); }
+.fit { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+section { position: relative; box-sizing: border-box; width: 1920px; height: 1080px; overflow: hidden; }
+section * { margin: 0; box-sizing: border-box; }
+section ol { padding-left: 1.2em; }
+section table { border-collapse: collapse; width: 100%; }
+section th, section td { padding: .35em .6em; text-align: left; vertical-align: top; border-bottom: 1px solid #CFC9BC; }
+section th { font-weight: 600; border-bottom: 2px solid #14233A; }
+.notes { color: #D5DAE1; font-size: 15px; line-height: 1.5; margin-top: 8px; }
+.notes summary { cursor: pointer; color: #9FB0C3; }
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  body { background: none; } main { max-width: none; padding: 0; } .notes { display: none; }
+  .frame { width: 1920px; height: 1080px; margin: 0; box-shadow: none; break-after: page; }
+  .fit { transform: none !important; }
+}
+</style></head>
+<body><main>
+<div class="frame"><div class="fit"><section id="cover" data-transition="fade" style="background:#14233A;color:#F6F4EF;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<p style="font-size:28px;font-weight:600;color:#7FC4CF;letter-spacing:3px;text-transform:uppercase">ML Capstone · Medical imaging</p>
+<div style="display:flex;flex-direction:column;gap:40px">
+<h1 style="font-family:'Source Serif 4', Georgia, serif;font-size:120px;font-weight:600;line-height:1.05;color:#F6F4EF">Kidney Stone<br>Second Reader</h1>
+<div style="width:1200px"><p style="font-size:44px;line-height:1.3;color:#C9D3DD">Helping the doctor catch the stone they would miss, and measuring honestly how often it does.</p></div>
+</div>
+<p style="font-size:32px;color:#C9D3DD">[Your name] · [Date]</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 1 speaker notes</summary><p>Hi, I’m [name]. My project is a second reader for kidney stones on CT: a model that points at stones so the doctor misses fewer of them. The part I’m proudest of is not the model, it’s how I measured it.</p></details>
+<div class="frame"><div class="fit"><section id="overview" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:72px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">The project in one slide</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">A second reader that points at kidney stones on CT</h2>
+</div>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:44px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F">Input</p>
+<p style="font-size:32px;line-height:1.4;color:#14233A">One coronal non-contrast CT slice of the kidneys.</p>
+</div>
+<div style="width:56px;flex:none;text-align:center;font-size:56px;color:#1D6F7F">&#8594;</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:44px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F">Output</p>
+<p style="font-size:32px;line-height:1.4;color:#14233A">Every candidate stone boxed and numbered. Red is confident; orange means look closer.</p>
+</div>
+<div style="width:56px;flex:none;text-align:center;font-size:56px;color:#1D6F7F">&#8594;</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#14233A;padding:44px;border-radius:16px">
+<p style="font-size:28px;font-weight:600;color:#7FC4CF">On new patients</p>
+<p style="font-size:32px;line-height:1.4;color:#F6F4EF">Finds 93 of every 100 stones, with about one wrong box every 7 slices.</p>
+</div>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 2 speaker notes</summary><p>In one sentence: this project is a second reader. You give it a CT slice of the kidneys, it boxes every stone it sees, and on patients it has never seen it finds 93 of every 100 stones while drawing only about one wrong box every seven slices. The rest of the talk explains why that matters, how I built it, and how I know those numbers are honest.</p></details>
+<div class="frame"><div class="fit"><section id="pain" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:72px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">The pain point</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">The first stone is easy to see.<br>The next one gets missed.</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:48px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#1D6F7F">10 px</p>
+<p style="font-size:32px;line-height:1.35;color:#4A5568">median stone size on a 391 × 320 slice</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:48px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#1D6F7F">52%</p>
+<p style="font-size:32px;line-height:1.35;color:#4A5568">of slices hold two or more stones</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:48px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#1D6F7F">13</p>
+<p style="font-size:32px;line-height:1.35;color:#4A5568">stones in the most crowded slice</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Source: audit of 778 coronal non-contrast CT slices, 1,699 labeled stones</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 3 speaker notes</summary><p>Kidney stones on CT are tiny. Half of them are 10 pixels or less on these slices. And more than half of the slices have two or more stones. The first stone grabs your attention; the second and third are the ones a tired doctor misses at 3 a.m. A missed stone matters: the count and location change whether the patient goes home with painkillers or needs a urologist.</p></details>
+<div class="frame"><div class="fit"><section id="user" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">The user</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">The doctor reading the scan</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:48px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:44px;font-weight:600;color:#14233A">Who</h3>
+<p style="font-size:32px;line-height:1.4;color:#4A5568">A radiologist or ER doctor reading a non-contrast CT for suspected renal colic, often alone on a night shift.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:48px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:44px;font-weight:600;color:#14233A">What they do</h3>
+<ol style="font-size:32px;line-height:1.4;color:#4A5568">
+<li>Open a coronal slice.</li>
+<li>See every candidate stone boxed, numbered and scored.</li>
+<li>Accept or reject each box, then count the stones.</li>
+</ol>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:center">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#14233A">It proposes. The doctor decides.</p>
+<p style="font-size:28px;color:#4A5568;background:#FBE3E1;padding:8px 20px;border-radius:999px;border-left:6px solid #C8322B">Red: right 9 times in 10</p>
+<p style="font-size:28px;color:#4A5568;background:#FBEBD9;padding:8px 20px;border-radius:999px;border-left:6px solid #E08A1E">Orange: look closer</p>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 4 speaker notes</summary><p>The user is the doctor reading the CT. The tool never diagnoses. It puts a numbered box on every candidate stone. A red box was right at least 9 times in 10 on validation, so it can be accepted at a glance. An orange box is the model saying “please look closer”. The doctor accepts or rejects each one and counts the stones.</p></details>
+<div class="frame"><div class="fit"><section id="framing" data-transition="fade" style="background:#ECE9E1;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Framing the problem</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">Four choices, all from the pain point</h2>
+</div>
+<table style="font-size:30px;color:#14233A">
+<tr><th style="width:34%">We chose</th><th style="width:66%">Because</th></tr>
+<tr><td><b>Detection</b>, not yes/no classification</td><td>The pain is the missed second stone: the doctor needs <i>where</i> and <i>how many</i>.</td></tr>
+<tr><td>Score <b>per stone</b>, not per image</td><td>An image with 4 stones and 1 missed is still a miss for the patient.</td></tr>
+<tr><td>Split <b>by patient</b>, not by image</td><td>The real question is how it does on a patient it has never seen.</td></tr>
+<tr><td><b>High sensitivity, few false alarms</b></td><td>A missed stone costs more than a box to dismiss, but too many boxes and doctors stop looking.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Constraints: one day, one person, a free Colab T4 GPU, 778 labeled slices</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 5 speaker notes</summary><p>Framing is where the medical problem becomes an ML problem. Because the pain is the missed second stone, this is object detection, not classification. Because one missed stone matters, I count per stone. Because a hospital cares about new patients, I split by patient. And because a doctor will ignore a noisy tool, the goal is high sensitivity with few false alarms.</p></details>
+<div class="frame"><div class="fit"><section id="flow" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">The pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">From CT slice to second reading in six steps</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">1 · Acquisition</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Coronal non-contrast CT, cropped to the kidneys, 391 × 320 px. Stones boxed by an annotator.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">2 · Curation</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Merge augmented copies. Recover 256 scan sessions from the DICOM acquisition time.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">3 · Patient-level split</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">70 / 15 / 15 by scan session. No patient appears in two sets.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">4 · Detection model</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">YOLOv8s pretrained on COCO, 960 px input, flip, rotation and mosaic augmentation.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">5 · Post-processing</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Merge overlapping boxes. Two thresholds learned on validation decide red, orange or hidden.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-size:26px;font-weight:600;color:#1D6F7F">6 · Evaluation and delivery</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Per-stone metrics and FROC on unseen patients, then a Gradio second-reader app.</p>
+</div>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 6 speaker notes</summary><p>Six steps, in medical imaging terms. Acquisition: coronal non-contrast CT, the standard scan for stones. Curation: the dataset stored training slices twice, and the DICOM IDs carry the acquisition time, which lets me rebuild 256 CT exams. Then a split by patient, a pretrained detector at 960 pixels, post-processing that merges duplicate boxes and sorts them into red, orange or hidden, and finally evaluation on unseen patients and a small app.</p></details>
+<div class="frame"><div class="fit"><section id="data" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">The data</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">What the dataset holds, and what it hid</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1D6F7F">778</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">unique slices in 1,300 files</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1D6F7F">256</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">scan sessions, our stand-in for patients</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1D6F7F">1,699</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">labeled stones, one class</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#B3541E">1</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">slice without a stone</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#14233A;padding:40px 48px;border-radius:16px">
+<p style="font-size:32px;font-weight:600;color:#F0A35E">The published split mixes patients</p>
+<p style="font-size:30px;line-height:1.4;color:#F6F4EF">93 of 256 scan sessions have slices in both train and test, and 68 of 123 published test slices come from patients seen in training. So we split by patient.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Roboflow “TEZ_ROI_AUG” v3, CC BY 4.0 · Philips CT, Aug 2019 to Dec 2020</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 7 speaker notes</summary><p>Before training I audited the data. 1,300 files are 778 real slices. The slice IDs contain the acquisition time, which groups them into 256 CT exams. Only one slice has no stone, so specificity can’t be measured. And the published split mixes patients: 68 of its 123 test slices come from patients the model trained on. I checked how much that matters in a first run: the effect was small and mixed up with how crowded those slices are, but only a split by patient answers the clinical question, so that is what every result here uses.</p></details>
+<div class="frame"><div class="fit"><section id="tuning" data-transition="fade" style="background:#ECE9E1;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Training and tuning</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">Tuned for the doctor’s workload, not the leaderboard</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="flex:3;display:flex;flex-direction:column">
+<table style="font-size:28px;color:#14233A">
+<tr><th style="width:46%">Test set, unseen patients</th><th style="width:27%;text-align:right">v1</th><th style="width:27%;text-align:right">v2 (final)</th></tr>
+<tr><td>Input size</td><td style="text-align:right">640 px</td><td style="text-align:right">960 px</td></tr>
+<tr><td>Box merging (NMS IoU)</td><td style="text-align:right">0.7</td><td style="text-align:right">0.3</td></tr>
+<tr><td>Show threshold</td><td style="text-align:right">0.020</td><td style="text-align:right">0.089</td></tr>
+<tr><td>Stone sensitivity</td><td style="text-align:right">94.8%</td><td style="text-align:right"><b>93.1%</b></td></tr>
+<tr><td>False alarms per slice</td><td style="text-align:right">0.73</td><td style="text-align:right"><b>0.13</b></td></tr>
+<tr><td>mAP50</td><td style="text-align:right">0.732</td><td style="text-align:right">0.632</td></tr>
+</table>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:28px;line-height:1.4;color:#4A5568"><b>v1 problem:</b> stacks of 5 to 10 boxes on one stone, and a threshold so low (0.02) that most boxes were orange.</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5568"><b>v2 fix:</b> merge overlapping boxes and learn the red cutoff from validation. False alarms fell about 5 times.</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5568"><b>The cost:</b> mAP50 fell 10 points. The 960 px input did not raise validation mAP (0.737 to 0.713).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">v2: 60 epochs, 29 min on a T4, training loss converged · v1 scored with a stricter centre-only hit rule, so its row is approximate</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 8 speaker notes</summary><p>Tuning was driven by what the doctor sees. Version 1 drew stacks of near-identical boxes on each stone, and its threshold was so low that almost everything was orange. Version 2 merges overlapping boxes, learns the red cutoff on validation data, and trains at 960 pixels. False alarms per slice fell from 0.73 to 0.13 at about the same sensitivity. Honest cost: the ML metric mAP50 dropped from 0.73 to 0.63, and the bigger input did not help on validation. For a second reader, I chose the version doctors would keep using.</p></details>
+<div class="frame"><div class="fit"><section id="metrics" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">How we measure it</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">Metrics a doctor would ask for</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">Stone sensitivity</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Of all real stones, the share that got a box.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">False alarms per slice</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Boxes pointing at nothing that the doctor has to dismiss.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">Precision</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Of all boxes shown, the share that finds a stone.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">All stones found</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Share of slices where not one stone was missed, so the count is right.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">FROC curve</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">Sensitivity against false alarms at every threshold, the radiology standard.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;color:#1D6F7F">mAP50</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">The standard ML detection score, so results compare with other projects.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">A hit = box centre inside the stone, or overlap IoU ≥ 0.1 · thresholds chosen on validation only · 95% intervals resample whole patients</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 9 speaker notes</summary><p>Accuracy alone would be meaningless here, because every slice has a stone. So I measure what a doctor would ask: how many stones does it find, how many wrong boxes do I have to dismiss, can I trust a box, and does it get the count right. The FROC curve shows all thresholds at once, and mAP50 is there so ML people can compare. A box counts as finding a stone if its centre is inside the stone or it overlaps it a little, because on a 6 pixel stone a 3 pixel shift should not count as a miss.</p></details>
+<div class="frame"><div class="fit"><section id="results" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Results · 120 slices from 39 unseen patients</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">93% of stones found, few false alarms</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#1D6F7F">93.1%</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">stone sensitivity (95% CI 88 to 98%)</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#1D6F7F">0.13</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">false alarms per slice</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#1D6F7F">90.8%</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">of slices with every stone found</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:32px;border:1px solid #DDD8CC;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#1D6F7F">0.63</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5568">mAP50 (ML metric)</p>
+</div>
+</div>
+<table style="font-size:28px;color:#14233A">
+<tr><th style="width:28%">Boxes shown</th><th style="width:18%;text-align:right">Sensitivity</th><th style="width:18%;text-align:right">False alarms / slice</th><th style="width:18%;text-align:right">Precision</th><th style="width:18%;text-align:right">All found</th></tr>
+<tr style="background:#DCEBEE"><td><b>Red + orange (default)</b></td><td style="text-align:right"><b>93.1%</b></td><td style="text-align:right"><b>0.13</b></td><td style="text-align:right"><b>81%</b></td><td style="text-align:right"><b>90.8%</b></td></tr>
+<tr><td>Red only</td><td style="text-align:right">87.9%</td><td style="text-align:right">0.008</td><td style="text-align:right">94%</td><td style="text-align:right">82.5%</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Test set: 248 stones · show threshold 0.089 and red threshold 0.321, both chosen on validation</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 10 speaker notes</summary><p>On 39 patients the model never saw, it finds 93% of stones, with a confidence interval of 88 to 98% because the test set is small. It draws 0.13 false alarms per slice, about one wrong box every seven or eight slices, and gets every stone in 91% of slices. Red boxes alone are very clean: one false red box in all 120 test slices. Orange boxes add the last 5% of stones. mAP50 of 0.63 is the ML score; it is stricter about box placement than a doctor needs to be.</p></details>
+<div class="frame"><div class="fit"><section id="froc" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Evaluation</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">The trade-off, and why we trust it</h2>
+</div>
+<div style="display:flex;gap:48px;align-items:center">
+<img src="img/froc.png" alt="FROC curve: stone sensitivity against false alarms per slice for validation and test; red threshold at 88% sensitivity and 0.008 false alarms, show threshold at 93% and 0.13" style="width:960px;height:596px;object-fit:contain;background:#FFFFFF;border:1px solid #DDD8CC;border-radius:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:30px;line-height:1.4;color:#4A5568"><b>Validation and test agree.</b> The dashed and solid curves overlap, so thresholds chosen on validation carry over to new patients.</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568"><b>Red dot:</b> red boxes alone find 88% of stones at almost no false alarms.</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568"><b>Orange dot:</b> adding orange boxes reaches 93% at 0.13 false alarms per slice.</p>
+</div>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 11 speaker notes</summary><p>This is a FROC curve, the standard way radiology AI reports lesion detection. Moving right lowers the threshold: more stones found, more false boxes. The important part is that the validation curve and the test curve sit on top of each other. That means the thresholds I chose on validation behave the same way on new patients. The red dot is the confident boxes; the orange dot adds the look-closer boxes.</p></details>
+<div class="frame"><div class="fit"><section id="failures" data-transition="fade" style="background:#ECE9E1;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Error analysis</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">It misses small stones and crowded kidneys</h2>
+</div>
+<div style="display:flex;gap:48px">
+<table style="width:808px;font-size:26px;color:#14233A">
+<tr><th style="width:40%">Stone size</th><th style="width:30%;text-align:right">Median</th><th style="width:30%;text-align:right">Found</th></tr>
+<tr><td>Small</td><td style="text-align:right">6 px</td><td style="text-align:right">84%</td></tr>
+<tr><td>Medium</td><td style="text-align:right">10 px</td><td style="text-align:right">96%</td></tr>
+<tr><td>Large</td><td style="text-align:right">19 px</td><td style="text-align:right">99%</td></tr>
+</table>
+<table style="width:808px;font-size:26px;color:#14233A">
+<tr><th style="width:50%">Stones in slice</th><th style="width:25%;text-align:right">Slices</th><th style="width:25%;text-align:right">All found</th></tr>
+<tr><td>1 or 2</td><td style="text-align:right">90</td><td style="text-align:right">97%</td></tr>
+<tr><td>3 to 4</td><td style="text-align:right">20</td><td style="text-align:right">90%</td></tr>
+<tr><td>5 or more</td><td style="text-align:right">10</td><td style="text-align:right">40%</td></tr>
+</table>
+</div>
+<img src="img/missed.png" alt="Six missed stones zoomed in: small stones of 6 to 16 px, several inside crowded clusters, one a small label nested inside a large stone’s label" style="width:1664px;height:293px;object-fit:contain;background:#FFFFFF;border-radius:12px">
+
+</section></div></div>
+<details class="notes"><summary>Slide 12 speaker notes</summary><p>Where does it fail? Small stones: 84% found, against 99% for large ones. Clinically that is the less harmful miss, because small stones usually pass on their own. Crowded kidneys: with five or more stones it gets every stone in only 4 of 10 slices. The pictures show the six largest misses: small stones, stones inside clusters, and one small label drawn inside a large stone’s label, which is a labeling quirk rather than a real miss.</p></details>
+<div class="frame"><div class="fit"><section id="audit" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Label audit</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">Are the false alarms really wrong?</h2>
+</div>
+<div style="display:flex;gap:48px;align-items:center">
+<img src="img/false_alarms.png" alt="The ten most confident false alarms, zoomed in, with model boxes in red and orange and labeled stones in green" style="width:1100px;height:463px;object-fit:contain;background:#FFFFFF;border-radius:12px">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:30px;line-height:1.35;color:#14233A"><b>2</b> look like real stones the labels missed (#1, #5)</p>
+<p style="font-size:30px;line-height:1.35;color:#14233A"><b>2</b> are boxes just beside a labeled stone (#6, #10)</p>
+<p style="font-size:30px;line-height:1.35;color:#14233A"><b>6</b> are faint spots or vessel-like streaks: mimics or noise</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">The 10 most confident false alarms on the test set · author’s visual read, not radiologist-verified</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 13 speaker notes</summary><p>I looked at the ten most confident false alarms. Two are bright, round spots that look like real stones with no label: the model may be right and the label wrong. Two are boxes sitting just beside a labeled stone. Six are faint spots or streaks that look like vessels, the kind of stone mimic a radiologist knows well. This is my own reading, not a radiologist’s, but it says the true false-alarm rate is probably a little lower than measured.</p></details>
+<div class="frame"><div class="fit"><section id="benefit" data-transition="fade" style="background:#F6F4EF;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#1D6F7F;letter-spacing:3px;text-transform:uppercase">Clinician outcome</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">What it means at the reading desk</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:34px;font-weight:600;color:#1D6F7F">93 of 100 stones get a box</h3>
+<p style="font-size:28px;line-height:1.4;color:#4A5568">The 7 it misses are mostly small, the kind that usually pass on their own.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:34px;font-weight:600;color:#1D6F7F">One wrong box every 7 slices</h3>
+<p style="font-size:28px;line-height:1.4;color:#4A5568">Few enough that the doctor keeps trusting it instead of switching it off.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:34px;font-weight:600;color:#1D6F7F">Red boxes can be trusted</h3>
+<p style="font-size:28px;line-height:1.4;color:#4A5568">One false red box in 120 slices. Orange boxes ask for a second look and catch 5% more stones.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:34px;font-weight:600;color:#1D6F7F">The second stone</h3>
+<p style="font-size:28px;line-height:1.4;color:#4A5568">Every stone found in 97% of slices with 1 or 2 stones, 90% with 3 to 4. Weak above 5.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Expected benefit: fewer missed stones and faster confirmation. Not yet proven with doctors: that needs a reader study.</p>
+
+</section></div></div>
+<details class="notes"><summary>Slide 14 speaker notes</summary><p>For the doctor: 93 of 100 stones get a box, and the misses are mostly the small ones that tend to pass anyway. One wrong box every seven slices is low enough that it won’t be ignored. Red boxes are almost never wrong, so they confirm the obvious stones fast, and orange boxes point at the ones worth a second look. For the pain point, the second stone: in slices with one to four stones, it gets every stone 90 to 97% of the time. What I have not shown is that doctors actually miss fewer stones with it. That needs a reader study: the same doctors reading with and without the tool.</p></details>
+<div class="frame"><div class="fit"><section id="clinic" data-transition="fade" style="background:#ECE9E1;color:#14233A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:600;color:#B3541E;letter-spacing:3px;text-transform:uppercase">Before real use</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1;color:#14233A">Eight things to fix before a real clinic</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px">
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">Specificity unknown</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">No stone-free slices, so false alarms on healthy patients are unmeasured.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">One source</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">One center, one vendor, 2019 to 2020. Needs external validation.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">2D, not 3D</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Doctors scroll the whole volume; one stone spans several slices.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">No size in mm</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Pixel spacing was lost, so it cannot guide pass-or-treat decisions.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">Kidney crop only</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Ureteral stones, the usual cause of colic, are out of scope.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">Noisy labels, mimics</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">One annotator; some stones unlabeled. Phleboliths can fool it.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">Not tested with doctors</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Needs a reader study: doctors reading with and without it.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:28px;border:1px solid #DDD8CC;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#14233A">Bias and regulation</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Doctors may trust its misses. It is a medical device and needs approval.</p>
+</div>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 15 speaker notes</summary><p>Eight honest limits. The biggest: every slice has a stone, so I can’t say how it behaves on healthy patients. It comes from one hospital and one scanner. It works on 2D slices, not the whole scan. It can’t measure stones in millimetres, it only sees the kidneys, and the labels are noisy. I measured the model alone, not doctors using it: proving the benefit needs a reader study. And a real deployment needs regulatory approval and a plan against automation bias.</p></details>
+<div class="frame"><div class="fit"><section id="demo" data-transition="fade" style="background:#14233A;color:#F6F4EF;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<p style="font-size:28px;font-weight:600;color:#7FC4CF;letter-spacing:3px;text-transform:uppercase">Live demo</p>
+<div style="display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1;color:#F6F4EF">It proposes.<br>The doctor decides.</h2>
+<div style="width:1300px"><p style="font-size:36px;line-height:1.4;color:#C9D3DD">Upload a coronal slice. Get every candidate stone boxed and numbered, a stone count, and a confidence for each one.</p></div>
+</div>
+<div style="display:flex;gap:24px">
+<p style="font-size:28px;color:#14233A;background:#F2A7A1;padding:10px 24px;border-radius:999px">Red: right 9 times in 10</p>
+<p style="font-size:28px;color:#14233A;background:#F5C58C;padding:10px 24px;border-radius:999px">Orange: look closer</p>
+</div>
+
+</section></div></div>
+<details class="notes"><summary>Slide 16 speaker notes</summary><p>Switch to Colab. Run the last cell: it opens the Gradio app. Open demo_images/001_7stones.jpg: the label says 7 stones, see how many it finds. Point out the numbered boxes, the red and orange count, and one orange box: “the model is asking the doctor to look closer.” Move the slider from 0.089 up to 0.32 to show only red boxes, then back down: the same trade-off as the FROC curve. Close with: it proposes, the doctor decides.</p></details>
+</main>
+<script>
+function fit() { document.querySelectorAll('.frame').forEach(f => f.firstElementChild.style.transform = `scale(${f.clientWidth / 1920})`); }
+addEventListener('resize', fit); fit();
+</script>
+</body></html>
