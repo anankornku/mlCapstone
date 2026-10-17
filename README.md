@@ -8,7 +8,7 @@ On 120 slices from 39 patients the model never saw, it finds **93.1% of stones**
 
 1. Upload `kidney.zip` to Google Drive at `MyDrive/kidney_capstone/kidney.zip`.
 2. Open `kidney_stone_second_reader_v2.ipynb` in Google Colab and select a T4 GPU runtime.
-3. Run all. The first run trains for about 30 minutes; later runs load the saved weights from Drive.
+3. Run all. The first run trains for about 30 minutes; later runs load the saved weights from Drive. To skip training entirely, also upload `model/model_session_split_960px_60ep.pt` to `MyDrive/kidney_capstone/`.
 4. The last cell starts the Gradio demo and prints a `gradio.live` link. Try the slices in `demo_images/`, which come from patients the model never trained on.
 
 ## Files
@@ -17,6 +17,7 @@ On 120 slices from 39 patients the model never saw, it finds **93.1% of stones**
 |---|---|
 | `kidney_stone_second_reader_v2.ipynb` | Final notebook with outputs: data audit, split by patient, YOLOv8s training at 960 px, evaluation, error analysis, demo |
 | `kidney_stone_second_reader.ipynb` | First run with outputs, kept for comparison (also trains a model on the published split) |
+| `model/model_session_split_960px_60ep.pt` | Trained weights: YOLOv8s, 960 px, split by patient (the final model). Load with `ultralytics.YOLO(path)` |
 | `dataset/kidney/` | The dataset in YOLO format |
 | `kidney.zip` | The same dataset, zipped for Colab |
 | `demo_images/` | The 120 test slices; each file name gives the labeled stone count |
